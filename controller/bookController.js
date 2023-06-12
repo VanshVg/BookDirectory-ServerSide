@@ -1,56 +1,63 @@
 const bookModel = require("../model/bookModel");
+const { v4: uuidv4 } = require("uuid");
 
 const add = async (req, resp) => {
+  let imageUrl = "";
+  let newBookId = uuidv4();
+
+  if (req.file) {
+    imageUrl = `http://localhost:4000/${req.file.filename}`;
+  }
   let data = new bookModel({
+    bookId: newBookId,
     title: req.body.title,
     isbn: req.body.isbn,
-    pagecount: req.body.pagecount,
+    pages: req.body.pages,
     author: req.body.author,
+    price: req.body.price,
+    imageUrl: imageUrl,
+    description: req.body.description,
+    genre: Object.values(req.body.genre),
   });
+
   const book = await bookModel.findOne({ isbn: req.body.isbn });
-  console.log(book);
   if (book) {
     resp.status(400).send({
       message: "Book already exists",
     });
-    console.log("Book already exists");
   } else {
     let result = await data.save();
     resp.status(200).send({ result });
-    console.log({ result });
   }
 };
 
 const show = async (req, resp) => {
   let data = await bookModel.find();
   resp.status(200).send({ data });
-  console.log({ data });
 };
 
 const showOne = async (req, resp) => {
-  const { id } = req.params;
-  let book = await bookModel.findOne({ isbn: id });
+  const bookId = req.params.id;
+  let book = await bookModel.findOne({ bookId: bookId });
   if (book) {
     resp.status(200).send({ book });
-    console.log({ book });
   } else {
     resp.status(404).send({
       message: "Book doesn't exist",
     });
-    console.log("Book doesn't exist");
   }
 };
+
 const remove = async (req, resp) => {
-  const { id } = req.params;
-  let deleteBook = await bookModel.find({ isbn: id });
+  const { bookId } = req.params;
+  let deleteBook = await bookModel.find({ bookId: bookId });
   deleteBook = 1;
   if (deleteBook.length == 0) {
     resp.status(404).send({
       message: "This book doesn't exist",
     });
-    console.log("This book doesn't exist");
   } else {
-    let data = await bookModel.deleteOne({ isbn: id });
+    await bookModel.deleteOne({ bookId: bookId });
     resp.status(200).send({
       message: "Book successfully removed",
     });
@@ -59,14 +66,14 @@ const remove = async (req, resp) => {
 };
 
 const update = async (req, resp) => {
-  const { id } = req.params;
-  let book = await bookModel.findOne({ isbn: id });
+  const { bookId } = req.params;
+  let book = await bookModel.findOne({ bookId: bookId });
   if (!book) {
     resp.status(404).send({
       message: "Book doesn't exist",
     });
   } else {
-    let data = await bookModel.updateOne({ isbn: id }, { $set: req.body });
+    await bookModel.updateOne({ bookId: bookId }, { $set: req.body });
     resp.status(200).send({
       message: "Book updated",
     });

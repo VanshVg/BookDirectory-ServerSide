@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-const bookSchema = mongoose.Schema({
+const cartSchema = mongoose.Schema({
+  userId: String,
   bookId: String,
   title: String,
   isbn: Number,
@@ -8,8 +9,8 @@ const bookSchema = mongoose.Schema({
   author: String,
   price: Number,
   imageUrl: String,
-  description: String,
+  quantity: Number,
   genre: Array,
 });
 
-module.exports = mongoose.model("books", bookSchema);
+module.exports = mongoose.model("cartdatas", cartSchema);
