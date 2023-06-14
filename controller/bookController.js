@@ -1,3 +1,4 @@
+const e = require("express");
 const bookModel = require("../model/bookModel");
 const { v4: uuidv4 } = require("uuid");
 
@@ -8,6 +9,9 @@ const add = async (req, resp) => {
   if (req.file) {
     imageUrl = `http://localhost:4000/${req.file.filename}`;
   }
+
+  const genres = req.body.genre.split(",").map((genre) => genre.trim());
+
   let data = new bookModel({
     bookId: newBookId,
     title: req.body.title,
@@ -17,7 +21,7 @@ const add = async (req, resp) => {
     price: req.body.price,
     imageUrl: imageUrl,
     description: req.body.description,
-    genre: Object.values(req.body.genre),
+    genre: genres,
   });
 
   const book = await bookModel.findOne({ isbn: req.body.isbn });
@@ -49,7 +53,8 @@ const showOne = async (req, resp) => {
 };
 
 const remove = async (req, resp) => {
-  const { bookId } = req.params;
+  const bookId = req.params.id;
+  console.log(bookId);
   let deleteBook = await bookModel.find({ bookId: bookId });
   deleteBook = 1;
   if (deleteBook.length == 0) {
@@ -65,19 +70,47 @@ const remove = async (req, resp) => {
   }
 };
 
-const update = async (req, resp) => {
-  const { bookId } = req.params;
-  let book = await bookModel.findOne({ bookId: bookId });
-  if (!book) {
-    resp.status(404).send({
-      message: "Book doesn't exist",
-    });
-  } else {
-    await bookModel.updateOne({ bookId: bookId }, { $set: req.body });
-    resp.status(200).send({
+const update = async (req, res) => {
+  const bookId = req.params.id;
+  try {
+    let book = await bookModel.findOne({ bookId: bookId });
+    if (!book) {
+      return res.status(404).send({
+        message: "Book doesn't exist",
+      });
+    }
+
+    let imageUrl = book.imageUrl;
+
+    if (req.file) {
+      imageUrl = `http://localhost:4000/${req.file.filename}`;
+    }
+
+    await bookModel.updateOne(
+      { bookId: bookId },
+      {
+        $set: {
+          title: req.body.title,
+          author: req.body.author,
+          description: req.body.description,
+          genre: req.body.genre,
+          pages: req.body.pages,
+          isbn: req.body.isbn,
+          price: req.body.price,
+          imageUrl: imageUrl,
+        },
+      }
+    );
+
+    res.status(200).send({
       message: "Book updated",
     });
-    console.log("Book updated");
+  } catch (error) {
+    console.error("Error updating book:", error);
+    res.status(500).send({
+      message: "Error updating book",
+      error: error.message,
+    });
   }
 };
 

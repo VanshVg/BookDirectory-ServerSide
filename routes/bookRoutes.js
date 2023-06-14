@@ -13,10 +13,10 @@ router.use((req, res, next) => {
 const bookRoutes = (upload) => {
   router.post("/addBook", upload.single("image"), bookController.add);
   router.get("/showBooks", bookController.show);
-  router.get("/showBook/:id", bookController.showOne);
-  router.get("/sortAuthor", bookController.sortAuthor);
-  router.delete("/removeBook/:id", bookController.remove);
-  router.put("/updateBook/:id", bookController.update);
+  router.get("/showbook/:id", bookController.showOne);
+  router.get("/sortauthor", bookController.sortAuthor);
+  router.delete("/removebook/:id", bookController.remove);
+  router.put("/updatebook/:id", upload.single("image"), bookController.update);
 
   return router;
 };
