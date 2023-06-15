@@ -120,4 +120,26 @@ const sortAuthor = async (req, resp) => {
   console.log({ data });
 };
 
-module.exports = { add, show, showOne, remove, update, sortAuthor };
+const filterBooks = async (req, resp) => {
+  const value = req.params.value;
+  console.log(value);
+  const books = await bookModel.find({
+    genre: { $regex: value, $options: "i" },
+  });
+  console.log(books);
+  if (books) {
+    resp.status(200).send({ books });
+  } else {
+    resp.status(404).send({ message: "No books found" });
+  }
+};
+
+module.exports = {
+  add,
+  show,
+  showOne,
+  remove,
+  update,
+  sortAuthor,
+  filterBooks,
+};
