@@ -116,8 +116,11 @@ const update = async (req, res) => {
   }
 };
 
-const sortAuthor = async (req, resp) => {
-  let data = await bookModel.find({ author: req.body.author });
+const search = async (req, resp) => {
+  const title = req.query.title;
+  let data = await bookModel.find({
+    title: { $regex: title, $options: "i" },
+  });
   resp.status(200).send({ data });
   console.log({ data });
 };
@@ -136,41 +139,72 @@ const filterBooks = async (req, resp) => {
 };
 
 const payment = async (req, resp) => {
-  let error;
-  try {
-    const { bookData, token } = req.body;
-    const customer = await stripe.customers.create({
-      email: token.email,
-      source: token.id,
-    });
+  if (req.body.quantity) {
+    try {
+      const { bookData, token, quantity } = req.body;
+      const customer = await stripe.customers.create({
+        email: token.email,
+        source: token.id,
+      });
 
-    const charge = await stripe.paymentIntents.create({
-      amount: bookData.price * 100,
-      currency: "inr",
-      customer: customer.id,
-      receipt_email: token.email,
-      description: `Purchased the ${bookData.title}`,
-      shipping: {
-        name: token.card.name,
-        address: {
-          line1: token.card.address_line1,
-          line2: token.card.address_line2,
-          city: token.card.address_city,
-          country: token.card.address_country,
-          postal_code: token.card.address_zip,
+      const charge = await stripe.paymentIntents.create({
+        amount: bookData.price * 100 * quantity,
+        currency: "inr",
+        customer: customer.id,
+        receipt_email: token.email,
+        description: `Purchased the ${bookData.title}`,
+        shipping: {
+          name: token.card.name,
+          address: {
+            line1: token.card.address_line1,
+            line2: token.card.address_line2,
+            city: token.card.address_city,
+            country: token.card.address_country,
+            postal_code: token.card.address_zip,
+          },
         },
-      },
-    });
+      });
+      resp.status(200).send({
+        message: "Payment Successful",
+      });
+    } catch (error) {
+      resp.status(400).send({
+        Error: error,
+      });
+    }
+  } else {
+    try {
+      const { bookData, token } = req.body;
+      const customer = await stripe.customers.create({
+        email: token.email,
+        source: token.id,
+      });
 
-    console.log("Charge:", { charge });
-    resp.status(200).send({
-      message: "Payment Successful",
-    });
-  } catch (error) {
-    console.log(error);
-    resp.status(400).send({
-      Error: error,
-    });
+      const charge = await stripe.paymentIntents.create({
+        amount: bookData.price * 100,
+        currency: "inr",
+        customer: customer.id,
+        receipt_email: token.email,
+        description: `Purchased the ${bookData.title}`,
+        shipping: {
+          name: token.card.name,
+          address: {
+            line1: token.card.address_line1,
+            line2: token.card.address_line2,
+            city: token.card.address_city,
+            country: token.card.address_country,
+            postal_code: token.card.address_zip,
+          },
+        },
+      });
+      resp.status(200).send({
+        message: "Payment Successful",
+      });
+    } catch (error) {
+      resp.status(400).send({
+        Error: error,
+      });
+    }
   }
 };
 
@@ -180,7 +214,7 @@ module.exports = {
   showOne,
   remove,
   update,
-  sortAuthor,
+  search,
   filterBooks,
   payment,
 };
