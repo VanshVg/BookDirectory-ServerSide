@@ -126,7 +126,6 @@ const filterBooks = async (req, resp) => {
   const books = await bookModel.find({
     genre: { $regex: value, $options: "i" },
   });
-  console.log(books);
   if (books) {
     resp.status(200).send({ books });
   } else {
