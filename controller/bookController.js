@@ -1,6 +1,8 @@
 const e = require("express");
 const bookModel = require("../model/bookModel");
 const { v4: uuidv4 } = require("uuid");
+require("dotenv").config();
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 
 const add = async (req, resp) => {
   let imageUrl = "";
@@ -133,6 +135,45 @@ const filterBooks = async (req, resp) => {
   }
 };
 
+const payment = async (req, resp) => {
+  let error;
+  try {
+    const { bookData, token } = req.body;
+    const customer = await stripe.customers.create({
+      email: token.email,
+      source: token.id,
+    });
+
+    const charge = await stripe.paymentIntents.create({
+      amount: bookData.price * 100,
+      currency: "inr",
+      customer: customer.id,
+      receipt_email: token.email,
+      description: `Purchased the ${bookData.title}`,
+      shipping: {
+        name: token.card.name,
+        address: {
+          line1: token.card.address_line1,
+          line2: token.card.address_line2,
+          city: token.card.address_city,
+          country: token.card.address_country,
+          postal_code: token.card.address_zip,
+        },
+      },
+    });
+
+    console.log("Charge:", { charge });
+    resp.status(200).send({
+      message: "Payment Successful",
+    });
+  } catch (error) {
+    console.log(error);
+    resp.status(400).send({
+      Error: error,
+    });
+  }
+};
+
 module.exports = {
   add,
   show,
@@ -141,4 +182,5 @@ module.exports = {
   update,
   sortAuthor,
   filterBooks,
+  payment,
 };

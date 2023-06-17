@@ -1,5 +1,7 @@
 const express = require("express");
 const multer = require("multer");
+const bodyparser = require("body-parser");
+const cors = require("cors");
 const bookRoute = require("./routes/bookRoutes");
 const userRoute = require("./routes/userRoutes");
 const cartRoute = require("./routes/cartRoutes");
@@ -8,6 +10,8 @@ require("./config/db");
 
 const app = express();
 
+app.use(cors());
+app.use(bodyparser.urlencoded({ extended: false }));
 app.use(express.json());
 
 const storage = multer.diskStorage({

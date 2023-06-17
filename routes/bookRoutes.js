@@ -18,6 +18,7 @@ const bookRoutes = (upload) => {
   router.delete("/removebook/:id", bookController.remove);
   router.put("/updatebook/:id", upload.single("image"), bookController.update);
   router.get("/books/:value", bookController.filterBooks);
+  router.post("/processpayment", bookController.payment);
 
   return router;
 };
