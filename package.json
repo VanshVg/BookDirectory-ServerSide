@@ -1,5 +1,5 @@
 {
-  "name": "Bookdirectory - ServerSide",
+  "name": "Bookdirectory-ServerSide",
   "version": "1.0.0",
   "description": "This contains end points related to book directory which will store books if it's already not stored, show stored books and it will update and delete existing books.",
   "main": "index.js",
