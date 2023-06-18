@@ -6,7 +6,15 @@ const bookRoute = require("./routes/bookRoutes");
 const userRoute = require("./routes/userRoutes");
 const cartRoute = require("./routes/cartRoutes");
 const path = require("path");
+const mongoose = require("mongoose");
 require("./config/db");
+
+mongoose.connection.once("open", function () {
+  console.log("Mongodb is connected");
+});
+mongoose.connection.on("disconnected", function () {
+  console.log("Mongodb is disconnected");
+});
 
 const app = express();
 
