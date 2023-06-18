@@ -29,7 +29,6 @@ const upload = multer({ storage });
 
 app.use(express.static(path.join(__dirname, "public/images")));
 
-console.log(path.join(__dirname));
 app.use("/api", bookRoute(upload));
 app.use("/api", userRoute);
 app.use("/api", cartRoute);

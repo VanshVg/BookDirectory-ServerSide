@@ -13,5 +13,9 @@ router.use((req, res, next) => {
 router.post("/register", userController.register);
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
+router.get("/displayUsers", userController.show);
+router.get("/profile", userController.profile);
+router.get("/verifypassword", userController.checkPassword);
+router.put("/changepassword", userController.newPassword);
 
 module.exports = router;

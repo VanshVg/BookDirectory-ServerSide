@@ -78,17 +78,11 @@ const login = async (req, resp) => {
                   if (err) {
                     throw err;
                   } else {
-                    resp
-                      .status(200)
-                      .cookie("token", token, {
-                        httpOnly: true,
-                        maxAge: 60 * 60 * 1000,
-                      })
-                      .send({
-                        isLoggedIn: true,
-                        role: user.role,
-                        userToken: token,
-                      });
+                    resp.status(200).send({
+                      isLoggedIn: true,
+                      role: user.role,
+                      userToken: token,
+                    });
                   }
                 }
               );
@@ -121,4 +115,59 @@ const logout = async (req, resp) => {
   resp.status(200).send({ isLoggedIn: false });
 };
 
-module.exports = { register, login, logout };
+const show = async (req, resp) => {
+  let data = await userModel.find();
+  resp.status(200).send({ data });
+};
+
+const profile = async (req, resp) => {
+  let userId = req.query.userId;
+  let data = await userModel.findOne({ userId: userId });
+  resp.status(200).send({ data });
+};
+
+const checkPassword = async (req, resp) => {
+  let userId = req.query.userId;
+  let user = await userModel.findOne({ userId: userId });
+  try {
+    bcrypt.compare(
+      req.query.password,
+      user.password,
+      async function (err, result) {
+        if (result === true) {
+          resp.status(200).send({
+            message: "Password is correct",
+          });
+        } else {
+          resp.status(401).send({
+            message: "Password is invalid",
+          });
+        }
+      }
+    );
+  } catch (err) {
+    resp.status(500).send({
+      Error: "Internal Server Error",
+    });
+  }
+};
+
+const newPassword = async (req, resp) => {
+  let userId = req.query.userId;
+  bcrypt.hash(req.body.newpassword, 10, async function (err, hash) {
+    await userModel.updateOne({ userId: userId }, { $set: { password: hash } });
+    resp.status(200).send({
+      message: "Password updated Successfully",
+    });
+  });
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  show,
+  profile,
+  checkPassword,
+  newPassword,
+};

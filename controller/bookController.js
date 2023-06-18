@@ -122,12 +122,10 @@ const search = async (req, resp) => {
     title: { $regex: title, $options: "i" },
   });
   resp.status(200).send({ data });
-  console.log({ data });
 };
 
 const filterBooks = async (req, resp) => {
   const value = req.params.value;
-  console.log(value);
   const books = await bookModel.find({
     genre: { $regex: value, $options: "i" },
   });
