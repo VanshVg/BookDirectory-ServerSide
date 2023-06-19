@@ -24,7 +24,7 @@ const add = async (req, resp) => {
           const genres = req.body.genre.split(",").map((genre) => genre.trim());
 
           let data = new bookModel({
-            bookId: req.body.bookId,
+            bookId: uuidv4(),
             title: req.body.title,
             isbn: req.body.isbn,
             pages: req.body.pages,
