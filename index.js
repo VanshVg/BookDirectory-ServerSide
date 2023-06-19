@@ -1,7 +1,7 @@
 const express = require("express");
-const multer = require("multer");
 const bodyparser = require("body-parser");
 const cors = require("cors");
+require("dotenv").config();
 const bookRoute = require("./routes/bookRoutes");
 const userRoute = require("./routes/userRoutes");
 const cartRoute = require("./routes/cartRoutes");
@@ -22,22 +22,9 @@ app.use(cors());
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(express.json());
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, "public/images"),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const filename = `${req.body.isbn}-${uniqueSuffix}${path.extname(
-      file.originalname
-    )}`;
-    cb(null, filename);
-  },
-});
-
-const upload = multer({ storage });
-
 app.use(express.static(path.join(__dirname, "public/images")));
 
-app.use("/api", bookRoute(upload));
+app.use("/api", bookRoute);
 app.use("/api", userRoute);
 app.use("/api", cartRoute);
 

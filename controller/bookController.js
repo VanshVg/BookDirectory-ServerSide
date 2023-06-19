@@ -1,39 +1,82 @@
-const e = require("express");
+const express = require("express");
 const bookModel = require("../model/bookModel");
 const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
+const cloudinary = require("cloudinary").v2;
+const streamifier = require("streamifier");
+
+cloudinary.config({
+  cloud_name: "dpnpsot6l",
+  api_key: "559459169476464",
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
 
 const add = async (req, resp) => {
-  let imageUrl = "";
-  let newBookId = uuidv4();
+  try {
+    let imageUrl = "";
 
-  if (req.file) {
-    imageUrl = `http://localhost:4000/${req.file.filename}`;
-  }
+    if (req.file) {
+      const stream = cloudinary.uploader.upload_stream((error, result) => {
+        if (result) {
+          imageUrl = result.secure_url;
 
-  const genres = req.body.genre.split(",").map((genre) => genre.trim());
+          const genres = req.body.genre.split(",").map((genre) => genre.trim());
 
-  let data = new bookModel({
-    bookId: newBookId,
-    title: req.body.title,
-    isbn: req.body.isbn,
-    pages: req.body.pages,
-    author: req.body.author,
-    price: req.body.price,
-    imageUrl: imageUrl,
-    description: req.body.description,
-    genre: genres,
-  });
+          let data = new bookModel({
+            bookId: req.body.bookId,
+            title: req.body.title,
+            isbn: req.body.isbn,
+            pages: req.body.pages,
+            author: req.body.author,
+            price: req.body.price,
+            imageUrl: imageUrl,
+            description: req.body.description,
+            genre: genres,
+          });
 
-  const book = await bookModel.findOne({ isbn: req.body.isbn });
-  if (book) {
-    resp.status(400).send({
-      message: "Book already exists",
-    });
-  } else {
-    let result = await data.save();
-    resp.status(200).send({ result });
+          data.save((err, result) => {
+            if (err) {
+              console.error("Error:", err);
+              resp.status(500).send({ error: "Failed to save book" });
+            } else {
+              resp.status(200).send({ result });
+            }
+          });
+        } else {
+          console.error("Failed to upload image:", error);
+          resp.status(500).send({ error: "Failed to upload image" });
+        }
+      });
+
+      streamifier.createReadStream(req.file.buffer).pipe(stream);
+    } else {
+      const genres = req.body.genre.split(",").map((genre) => genre.trim());
+
+      let data = new bookModel({
+        bookId: req.body.bookId,
+        title: req.body.title,
+        isbn: req.body.isbn,
+        pages: req.body.pages,
+        author: req.body.author,
+        price: req.body.price,
+        imageUrl: imageUrl,
+        description: req.body.description,
+        genre: genres,
+      });
+
+      data.save((err, result) => {
+        if (err) {
+          console.error("Error:", err);
+          resp.status(500).send({ error: "Failed to save book" });
+        } else {
+          resp.status(200).send({ result });
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    resp.status(500).send({ error: "An error occurred" });
   }
 };
 

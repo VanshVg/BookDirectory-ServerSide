@@ -1,4 +1,7 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
+
 const bookController = require("../controller/bookController");
 
 const router = express.Router();
@@ -10,17 +13,17 @@ router.use((req, res, next) => {
   next();
 });
 
-const bookRoutes = (upload) => {
-  router.post("/addBook", upload.single("image"), bookController.add);
-  router.get("/showBooks", bookController.show);
-  router.get("/showbook/:id", bookController.showOne);
-  router.get("/search", bookController.search);
-  router.delete("/removebook/:id", bookController.remove);
-  router.put("/updatebook/:id", upload.single("image"), bookController.update);
-  router.get("/books/:value", bookController.filterBooks);
-  router.post("/processpayment", bookController.payment);
+const storage = multer.memoryStorage();
 
-  return router;
-};
+const upload = multer({ storage });
 
-module.exports = bookRoutes;
+router.post("/addBook", upload.single("image"), bookController.add);
+router.get("/showBooks", bookController.show);
+router.get("/showbook/:id", bookController.showOne);
+router.get("/search", bookController.search);
+router.delete("/removebook/:id", bookController.remove);
+router.put("/updatebook/:id", upload.single("image"), bookController.update);
+router.get("/books/:value", bookController.filterBooks);
+router.post("/processpayment", bookController.payment);
+
+module.exports = router;
