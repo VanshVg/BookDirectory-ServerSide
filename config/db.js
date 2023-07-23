@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
-const url =
-  "mongodb+srv://vanshvg:Vansh1712@socialmedia.xqmcctb.mongodb.net/bookDirectory";
+const url = process.env.MONGODB_URL;
 
 module.exports = mongoose.connect(url);
