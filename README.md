@@ -1,8 +1,7 @@
 
 # Book Birectory
 
-Endpoints of Book Directory websites have been created using CRUD operations with the use of Node and Express.
-
+This repository contains the serverside code for MERN Stack website of Book Directory which has APIs made using Node and Express.
 
 ## Installation
 
